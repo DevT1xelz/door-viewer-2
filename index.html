@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#cfd5dd">
+<title>Входная дверь с боковым остеклением — 3D</title>
+<style>
+  :root{
+    --bg1:#f3f5f8; --bg2:#d3d9e1; --bg3:#b1bac6;
+    --ink:#1b1f24; --ink2:#566070; --card:rgba(255,255,255,.88); --line:rgba(20,28,40,.12);
+    --accent:#2f3640; --accent-ink:#fff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg1:#3a4049; --bg2:#23272d; --bg3:#14171b; --ink:#eef1f5; --ink2:#a4adba;
+      --card:rgba(34,38,45,.9); --line:rgba(255,255,255,.12); --accent:#e8ebf0; --accent-ink:#14171b; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    color:var(--ink);-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+  #app{position:fixed;inset:0;
+    background:radial-gradient(120% 95% at 50% 32%,var(--bg1) 0%,var(--bg2) 58%,var(--bg3) 100%)}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none;
+    opacity:0;transition:opacity .5s}
+  body.ready canvas{opacity:1}
+  #loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink2);font-size:15px;
+    transition:opacity .4s;pointer-events:none}
+  body.ready #loading{opacity:0}
+
+  header{position:absolute;left:0;right:0;top:0;display:flex;align-items:flex-start;justify-content:space-between;
+    gap:12px;padding:calc(14px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left));
+    pointer-events:none}
+  h1{margin:0;font-size:clamp(17px,2.4vw,22px);font-weight:650;letter-spacing:-.01em}
+  .sub{margin-top:3px;font-size:clamp(12px,1.6vw,14px);color:var(--ink2)}
+  .iconbtn{pointer-events:auto;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);font:600 18px/1 system-ui;display:grid;place-items:center;cursor:pointer}
+
+  #hint{position:absolute;left:50%;transform:translateX(-50%);
+    top:calc(84px + env(safe-area-inset-top));max-width:calc(100% - 32px);
+    padding:8px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);
+    color:var(--ink2);font-size:13px;text-align:center;transition:opacity .5s;pointer-events:none}
+  #hint.hide{opacity:0}
+
+  nav{position:absolute;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+    padding:12px calc(12px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+  .group{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+  button{font:inherit;color:var(--ink);cursor:pointer;-webkit-appearance:none;appearance:none}
+  nav button{min-height:44px;padding:0 16px;border-radius:999px;border:0;background:transparent;font-size:14px;font-weight:550;white-space:nowrap}
+  nav button.on{background:var(--accent);color:var(--accent-ink)}
+  nav button:disabled{opacity:.55;cursor:default}
+  #btnOpen{background:var(--accent);color:var(--accent-ink);border:1px solid var(--line);min-width:158px}
+  .solo{padding:4px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+  nav button:focus-visible,.iconbtn:focus-visible{outline:2px solid #4c8dff;outline-offset:2px}
+  @media (hover:hover){ nav button:not(.on):not(:disabled):hover{background:rgba(120,130,145,.18)} }
+
+  #specs{position:absolute;right:0;top:0;bottom:0;width:min(380px,100%);transform:translateX(102%);
+    transition:transform .3s;background:var(--card);border-left:1px solid var(--line);
+    padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+    overflow:auto;-webkit-overflow-scrolling:touch}
+  #specs.open{transform:none}
+  #specs h2{margin:0 44px 10px 0;font-size:18px}
+  #specs dl{margin:0}
+  #specs dt{font-size:12px;color:var(--ink2);margin-top:12px}
+  #specs dd{margin:2px 0 0;font-size:14px;line-height:1.4}
+  #specsClose{position:absolute;right:14px;top:calc(12px + env(safe-area-inset-top))}
+
+  @media (max-width:520px){
+    nav{gap:6px}
+    nav button{padding:0 12px;font-size:13px}
+    #btnOpen{min-width:0;flex:1 1 100%;order:-1}
+    .group{flex:1 1 auto;justify-content:space-between}
+    .group button{flex:1}
+    #hint{top:calc(92px + env(safe-area-inset-top))}
+  }
+  @media (max-height:430px) and (orientation:landscape){
+    header{display:none}
+    #hint{display:none}
+    nav{width:auto;left:auto;right:0;bottom:0;flex-direction:column;align-items:stretch;padding-bottom:8px}
+    #btnOpen{order:0}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="c" tabindex="0" aria-label="3D-модель двери: перетаскивайте, чтобы вращать"></canvas>
+  <div id="loading">Загрузка модели…</div>
+
+  <header>
+    <div>
+      <h1>Входная дверь с боковым остеклением</h1>
+      <div class="sub">Графит · рифлёная панель · ручка-скоба</div>
+    </div>
+    <button class="iconbtn" id="btnInfo" aria-label="Характеристики">i</button>
+  </header>
+
+  <div id="hint">Тяните — вращать · щипок — приблизить · нажмите на дверь — открыть</div>
+
+  <nav aria-label="Управление">
+    <button id="btnOpen" aria-pressed="false">Открыть дверь</button>
+    <div class="group" role="group" aria-label="Вид">
+      <button data-view="outside" class="on">Снаружи</button>
+      <button data-view="inside">Изнутри</button>
+    </div>
+    <div class="solo"><button id="btnLight">Свет: Мягкий свет</button></div>
+    <div class="solo"><button id="btnSpin" aria-pressed="false">Авто-вращение</button></div>
+  </nav>
+
+  <aside id="specs" aria-label="Характеристики двери">
+    <button class="iconbtn" id="specsClose" aria-label="Закрыть">✕</button>
+    <h2>Характеристики</h2>
+    <dl>
+      <dt>Полотно</dt><dd>860 × 2050 мм, толщина 75 мм, открывание наружу, 2 петли с осью, ушедшей вглубь (ствол спрятан в зазоре)</dd>
+      <dt>Лицевая сторона</dt><dd>Графитовая порошковая краска (сатин). Рифлёная панель: 19 вертикальных планок. Гладкая панель с бортиком, ручка-скоба 1410 мм на трёх стойках</dd>
+      <dt>Замки снаружи</dt><dd>Сверху — чёрный квадратный замок под большой ключ, посередине — поворотный барашек, снизу — замок под мини-ключ, над ними глазок. Засовы в трёх точках</dd>
+      <dt>Тыльная сторона</dt><dd>Те же панели, рычажная ручка, поворотный барашек замка и глазок</dd>
+      <dt>Боковое остекление</dt><dd>340 мм, стеклопакет, стекло прозрачное с обеих сторон, штапики по периметру</dd>
+      <dt>Рама</dt><dd>Широкая плоская рама-наличник графит, порог рамы, уплотнитель</dd>
+    </dl>
+  </aside>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
